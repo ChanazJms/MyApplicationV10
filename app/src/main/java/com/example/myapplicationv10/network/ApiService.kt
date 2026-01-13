@@ -8,7 +8,6 @@ import retrofit2.http.*
 /**
  * ApiService - Interface Retrofit définissant tous les endpoints de l'API backend
  *
- * Base URL: http://your-server.com:8080
  * Documentation: Voir context.md pour les détails complets
  */
 interface ApiService {
