@@ -13,16 +13,16 @@ object Constants {
      * Base URL de l'API backend
      *
      * IMPORTANT:
-     * - Pour développement local: "http://10.0.2.2:8080/" (émulateur Android)
-     * - Pour appareil physique: "http://YOUR_COMPUTER_IP:8080/"
-     * - Pour production: MUST use HTTPS: "https://your-domain.com/"
+     * - Pour développement local: "http://10.0.2.2:8080/api/" (émulateur Android)
+     * - Pour appareil physique: "http://YOUR_COMPUTER_IP:8080/api/"
+     * - Pour production: MUST use HTTPS: "https://your-domain.com/api/"
      *
      * NOTE: android:usesCleartextTraffic has been removed from AndroidManifest.xml
      * For development, you'll need to either:
      * 1. Use HTTPS with a self-signed certificate, OR
      * 2. Add network_security_config.xml to allow cleartext for development only
      */
-    const val BASE_URL = "http://4.165.39.94:8080/"  // TODO: Change to HTTPS for production!
+    const val BASE_URL = "https://vannecontrol.swedencentral.cloudapp.azure.com/api/"
 
     /**
      * Timeout pour les connexions réseau (en secondes)
@@ -86,9 +86,11 @@ object Constants {
      *
      * IMPORTANT:
      * - Pour développement local: "ws://10.0.2.2:8080/ws"
-     * - Pour production: Remplacer par votre URL WSS réelle
+     * - Pour production: Remplacer par URL WSS réelle
+     *
+     * NOTE: WebSocket endpoint may or may not need /api prefix - check backend routing
      */
-    const val WEBSOCKET_URL = "ws://4.165.39.94:8080/ws"
+    const val WEBSOCKET_URL = "wss://vannecontrol.swedencentral.cloudapp.azure.com/ws"
 
     /**
      * Types de messages WebSocket
@@ -113,4 +115,52 @@ object Constants {
      * Activer les logs réseau (désactiver en production)
      */
     const val ENABLE_NETWORK_LOGS = true
+
+    // =====================
+    // AVATAR CONFIGURATION
+    // =====================
+
+    /**
+     * Base domain for the backend (without /api suffix)
+     */
+    private const val BASE_DOMAIN = "https://vannecontrol.swedencentral.cloudapp.azure.com"
+
+    /**
+     * Fix avatar URLs returned by backend
+     *
+     * Handles multiple cases:
+     * - localhost URLs → production domain
+     * - HTTP URLs → HTTPS (for security)
+     * - Malformed URLs → null
+     *
+     * @param url Avatar URL from backend (may be null, contain localhost, or use HTTP)
+     * @return Fixed HTTPS URL accessible from mobile devices, or null
+     */
+    fun fixAvatarUrl(url: String?): String? {
+        if (url.isNullOrEmpty()) return null
+
+        var fixedUrl = url
+
+        // Replace localhost URLs with production domain
+        fixedUrl = fixedUrl
+            .replace("http://localhost:8080", BASE_DOMAIN)
+            .replace("https://localhost:8080", BASE_DOMAIN)
+            .replace("http://127.0.0.1:8080", BASE_DOMAIN)
+            .replace("https://127.0.0.1:8080", BASE_DOMAIN)
+
+        // Ensure HTTPS for production domain (security requirement)
+        if (fixedUrl.startsWith("http://vannecontrol.swedencentral.cloudapp.azure.com")) {
+            fixedUrl = fixedUrl.replace(
+                "http://vannecontrol.swedencentral.cloudapp.azure.com",
+                "https://vannecontrol.swedencentral.cloudapp.azure.com"
+            )
+        }
+
+        // Validate URL format
+        return if (fixedUrl.startsWith("http://") || fixedUrl.startsWith("https://")) {
+            fixedUrl
+        } else {
+            null
+        }
+    }
 }

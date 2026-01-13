@@ -24,8 +24,7 @@
             android:id="@+id/backButton"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:src="@drawable/ic_launcher_foreground"
-            android:background="@drawable/arrow_back"
+            android:src="@drawable/arrow_back"
             android:padding="8dp"
             android:contentDescription="Back"
             app:layout_constraintStart_toStartOf="parent"
@@ -94,7 +93,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:padding="25dp"
-                        android:src="@drawable/ic_launcher_foreground"
+                        android:src="@drawable/ic_toggle_off"
                         android:contentDescription="Valve 1 Toggle" />
 
                 </androidx.cardview.widget.CardView>
@@ -136,7 +135,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:padding="25dp"
-                        android:src="@drawable/ic_launcher_foreground"
+                        android:src="@drawable/ic_toggle_off"
                         android:contentDescription="Valve 2 Toggle" />
 
                 </androidx.cardview.widget.CardView>
@@ -178,7 +177,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:padding="25dp"
-                        android:src="@drawable/ic_launcher_foreground"
+                        android:src="@drawable/ic_toggle_off"
                         android:contentDescription="Valve 3 Toggle" />
 
                 </androidx.cardview.widget.CardView>
@@ -220,7 +219,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:padding="25dp"
-                        android:src="@drawable/ic_launcher_foreground"
+                        android:src="@drawable/ic_toggle_off"
                         android:contentDescription="Valve 4 Toggle" />
 
                 </androidx.cardview.widget.CardView>
@@ -262,7 +261,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:padding="25dp"
-                        android:src="@drawable/ic_launcher_foreground"
+                        android:src="@drawable/ic_toggle_off"
                         android:contentDescription="Valve 5 Toggle" />
 
                 </androidx.cardview.widget.CardView>
@@ -304,7 +303,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:padding="25dp"
-                        android:src="@drawable/ic_launcher_foreground"
+                        android:src="@drawable/ic_toggle_off"
                         android:contentDescription="Valve 6 Toggle" />
 
                 </androidx.cardview.widget.CardView>
@@ -346,7 +345,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:padding="25dp"
-                        android:src="@drawable/ic_launcher_foreground"
+                        android:src="@drawable/ic_toggle_off"
                         android:contentDescription="Valve 7 Toggle" />
 
                 </androidx.cardview.widget.CardView>
@@ -388,7 +387,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:padding="25dp"
-                        android:src="@drawable/ic_launcher_foreground"
+                        android:src="@drawable/ic_toggle_off"
                         android:contentDescription="Valve 8 Toggle" />
 
                 </androidx.cardview.widget.CardView>

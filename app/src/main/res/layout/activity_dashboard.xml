@@ -154,6 +154,7 @@
                             android:src="@drawable/ic_valve"
                             android:background="@android:color/transparent"
                             android:padding="8dp"
+                            app:tint="@color/green"
                             android:contentDescription="Valve Control" />
 
                         <LinearLayout
@@ -219,6 +220,7 @@
                             android:src="@drawable/timing_plan"
                             android:background="@android:color/transparent"
                             android:padding="8dp"
+                            app:tint="@color/green"
                             android:contentDescription="Timing Plan" />
 
                         <LinearLayout
@@ -281,10 +283,10 @@
                         <ImageView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:src="@drawable/ic_launcher_foreground"
-                            android:background="@drawable/ic_calendar"
+                            android:src="@drawable/ic_calendar"
                             android:padding="8dp"
-                            android:contentDescription="History" />
+                            android:contentDescription="History"
+                            app:tint="@color/green" />
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -346,10 +348,10 @@
                         <ImageView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:src="@drawable/ic_launcher_foreground"
-                            android:background="@drawable/ic_bar_chart"
+                            android:src="@drawable/ic_bar_chart"
                             android:padding="8dp"
-                            android:contentDescription="Statistics" />
+                            android:contentDescription="Statistics"
+                            app:tint="@color/green" />
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -412,10 +414,11 @@
                         <ImageView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:src="@drawable/ic_launcher_foreground"
-                            android:background="@drawable/ic_notifications"
+                            android:src="@drawable/ic_notifications"
                             android:padding="8dp"
-                            android:contentDescription="Notifications" />
+                            android:contentDescription="Notifications"
+                            app:tint="@color/green" />
+
 
                         <LinearLayout
                             android:layout_width="0dp"
