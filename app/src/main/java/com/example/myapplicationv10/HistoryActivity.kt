@@ -28,7 +28,6 @@ import java.util.*
 
 class HistoryActivity : BaseActivity() {
 
-
     data class ValveAction(
         val valveId: Int,
         val valveName: String,
@@ -62,17 +61,13 @@ class HistoryActivity : BaseActivity() {
             insets
         }
 
-        // Initialize ViewModel
         viewModel = ViewModelProvider(this)[HistoryViewModel::class.java]
 
         setupBackButton()
         setupFilterPanel()
         setupRecyclerView()
-
-        // Observe history data
         observeViewModel()
 
-        // Load history from backend
         viewModel.loadHistory()
     }
 
@@ -91,7 +86,7 @@ class HistoryActivity : BaseActivity() {
                         Snackbar.make(binding.root, result.message, Snackbar.LENGTH_LONG).show()
                     }
                     is NetworkResult.Loading -> {
-                        // Show loading state if needed
+                        // Show loading
                     }
                     is NetworkResult.Idle -> {
                         // Initial state
@@ -107,16 +102,13 @@ class HistoryActivity : BaseActivity() {
 
         for (event in telemetryEvents) {
             try {
-                // Parse payload to extract piston number
                 @Suppress("UNCHECKED_CAST")
                 val payload = event.payload?.let { gson.fromJson(it, Map::class.java) as? Map<String, Any> }
                 val pistonNumber = (payload?.get("piston_number") as? Double)?.toInt() ?: 1
 
-                // Parse timestamp
                 val instant = Instant.parse(event.createdAt)
                 val date = Date.from(instant)
 
-                // Map event type to action
                 val action = when (event.eventType) {
                     "activated" -> "Opened"
                     "deactivated" -> "Closed"
@@ -129,21 +121,17 @@ class HistoryActivity : BaseActivity() {
                         valveName = "Valve $pistonNumber",
                         action = action,
                         timestamp = date,
-                        user = "System", // Backend doesn't track user in telemetry
+                        user = "System",
                         currentState = event.eventType == "activated"
                     )
                 )
             } catch (e: Exception) {
-                // Skip malformed events
                 e.printStackTrace()
             }
         }
 
         fullHistory.sortByDescending { it.timestamp }
-        filteredHistory.clear()
-        filteredHistory.addAll(fullHistory)
-        adapter.notifyDataSetChanged()
-        updateResultsCount()
+        applyFiltersLocally()
     }
 
     private fun setupFilterPanel() {
@@ -169,8 +157,18 @@ class HistoryActivity : BaseActivity() {
             val chip = Chip(this).apply {
                 text = "Valve $i"
                 isCheckable = true
+                chipStrokeWidth = 0f
+                setChipStrokeColorResource(android.R.color.transparent)
                 setOnCheckedChangeListener { _, isChecked ->
-                    if (isChecked) selectedValves.add(i) else selectedValves.remove(i)
+                    if (isChecked) {
+                        selectedValves.add(i)
+                        chipStrokeWidth = 4f
+                        setChipStrokeColorResource(android.R.color.black)
+                    } else {
+                        selectedValves.remove(i)
+                        chipStrokeWidth = 0f
+                        setChipStrokeColorResource(android.R.color.transparent)
+                    }
                 }
             }
             binding.valveChipGroup.addView(chip)
@@ -181,18 +179,36 @@ class HistoryActivity : BaseActivity() {
         val openChip = binding.chipOpened
         val closeChip = binding.chipClosed
 
+        // État initial: sans contour, couleur de texte par défaut (comme les vannes)
+        openChip.chipStrokeWidth = 0f
+        openChip.setChipStrokeColorResource(android.R.color.transparent)
+        closeChip.chipStrokeWidth = 0f
+        closeChip.setChipStrokeColorResource(android.R.color.transparent)
+
         openChip.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 selectedAction = "Opened"
                 closeChip.isChecked = false
-            } else if (selectedAction == "Opened") selectedAction = null
+                openChip.chipStrokeWidth = 4f
+                openChip.setChipStrokeColorResource(android.R.color.black)
+            } else {
+                if (selectedAction == "Opened") selectedAction = null
+                openChip.chipStrokeWidth = 0f
+                openChip.setChipStrokeColorResource(android.R.color.transparent)
+            }
         }
 
         closeChip.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 selectedAction = "Closed"
                 openChip.isChecked = false
-            } else if (selectedAction == "Closed") selectedAction = null
+                closeChip.chipStrokeWidth = 4f
+                closeChip.setChipStrokeColorResource(android.R.color.black)
+            } else {
+                if (selectedAction == "Closed") selectedAction = null
+                closeChip.chipStrokeWidth = 0f
+                closeChip.setChipStrokeColorResource(android.R.color.transparent)
+            }
         }
     }
 
@@ -241,36 +257,27 @@ class HistoryActivity : BaseActivity() {
     }
 
     private fun applyFilters() {
-        // Prepare filter parameters for backend
-        val pistonNumber = if (selectedValves.size == 1) selectedValves.first() else null
-        val action = when (selectedAction) {
-            "Opened" -> "activated"
-            "Closed" -> "deactivated"
-            else -> null
-        }
+        applyFiltersLocally()
+    }
 
-        // Convert dates to ISO format for backend
-        val startDateIso = startDate?.let {
-            Instant.ofEpochMilli(it.timeInMillis).toString()
-        }
-        val endDateIso = endDate?.let {
-            val endOfDay = it.clone() as Calendar
-            endOfDay.set(Calendar.HOUR_OF_DAY, 23)
-            endOfDay.set(Calendar.MINUTE, 59)
-            endOfDay.set(Calendar.SECOND, 59)
-            Instant.ofEpochMilli(endOfDay.timeInMillis).toString()
-        }
+    private fun applyFiltersLocally() {
+        filteredHistory.clear()
+        filteredHistory.addAll(fullHistory.filter { action ->
+            val matchesValve = selectedValves.isEmpty() || selectedValves.contains(action.valveId)
+            val matchesAction = selectedAction == null || action.action == selectedAction
+            val matchesStartDate = startDate == null || !action.timestamp.before(startDate!!.time)
+            val matchesEndDate = endDate == null || !action.timestamp.after(
+                (endDate!!.clone() as Calendar).apply {
+                    set(Calendar.HOUR_OF_DAY, 23)
+                    set(Calendar.MINUTE, 59)
+                    set(Calendar.SECOND, 59)
+                }.time
+            )
 
-        // Load filtered data from backend
-        viewModel.loadHistory(
-            deviceId = null,
-            pistonNumber = pistonNumber,
-            action = action,
-            startDate = startDateIso,
-            endDate = endDateIso,
-            limit = 1000
-        )
-
+            matchesValve && matchesAction && matchesStartDate && matchesEndDate
+        })
+        adapter.notifyDataSetChanged()
+        updateResultsCount()
         updateActiveFiltersChips()
     }
 
@@ -341,8 +348,7 @@ class HistoryActivity : BaseActivity() {
         binding.startDateButton.text = "Date de début"
         binding.endDateButton.text = "Date de fin"
 
-        // Reload all history from backend without filters
-        viewModel.loadHistory()
+        applyFiltersLocally()
 
         binding.activeFiltersChipGroup.removeAllViews()
         binding.activeFiltersSection.visibility = View.GONE
@@ -359,6 +365,4 @@ class HistoryActivity : BaseActivity() {
         adapter = HistoryAdapter(filteredHistory)
         binding.historyRecyclerView.adapter = adapter
     }
-
-
 }

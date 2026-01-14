@@ -35,9 +35,9 @@ class ActiveValvesAdapter(private var valves: List<Valve>) :
         holder.valveStatus.text = "Active"
         holder.valveTime.text = valve.lastChanged
 
-        holder.valveIndicator.setCardBackgroundColor(context.getColor(R.color.green))
+        holder.valveIndicator.setCardBackgroundColor(android.graphics.Color.parseColor("#E8E8E8"))
         holder.valveStatusIcon.setImageResource(R.drawable.ic_water)
-        holder.valveStatusIcon.clearColorFilter()
+        holder.valveStatusIcon.setColorFilter(android.graphics.Color.BLACK)
         holder.valveStatus.setTextColor(context.getColor(R.color.green))
     }
 

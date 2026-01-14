@@ -36,8 +36,8 @@
         <!-- Profile Icon -->
         <ImageView
             android:id="@+id/profileIcon"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
             android:src="@drawable/account_circle"
             android:padding="10dp"
             android:contentDescription="Profile"
@@ -103,13 +103,31 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent">
 
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/activeValvesRecyclerView"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:orientation="vertical"
                         android:minHeight="120dp"
-                        android:padding="16dp"
-                        tools:listitem="@layout/item_active_valve" />
+                        android:gravity="center">
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/activeValvesRecyclerView"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:padding="16dp"
+                            tools:listitem="@layout/item_active_valve" />
+
+                        <TextView
+                            android:id="@+id/noActiveValvesText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Aucune valve est active"
+                            android:textColor="#999999"
+                            android:textSize="14sp"
+                            android:visibility="gone"
+                            android:padding="16dp" />
+
+                    </LinearLayout>
 
                 </androidx.cardview.widget.CardView>
 

@@ -18,22 +18,11 @@ import com.example.myapplicationv10.viewmodel.ProfileViewModel
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 
-/**
- * ProfileActivity - Écran de profil utilisateur avec affichage d'avatar
- *
- * Fonctionnalités:
- * - Affichage des informations du profil
- * - Chargement de l'avatar avec Coil
- * - Navigation vers l'édition
- * - Déconnexion
- */
 class ProfileActivity : BaseActivity() {
 
     private lateinit var binding: ActivityProfileBinding
     private lateinit var editProfileLauncher: ActivityResultLauncher<Intent>
     private lateinit var viewModel: ProfileViewModel
-
-    // Store current user data for passing to edit screen
     private var currentAvatarUrl: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,12 +33,10 @@ class ProfileActivity : BaseActivity() {
 
         viewModel = ViewModelProvider(this)[ProfileViewModel::class.java]
 
-        // Initialiser le launcher pour EditProfileActivity
         editProfileLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
             if (result.resultCode == RESULT_OK) {
-                // Reload profile data from backend after edit
                 viewModel.loadUserProfile()
             }
         }
@@ -61,7 +48,6 @@ class ProfileActivity : BaseActivity() {
         observeProfileState()
         loadValveLimit()
 
-        // Load user profile from backend
         viewModel.loadUserProfile()
     }
 
@@ -71,18 +57,23 @@ class ProfileActivity : BaseActivity() {
 
     private fun setupTabNavigation() {
         binding.personalInfoTab.setOnClickListener {
-            binding.personalInfoTab.setBackgroundResource(R.drawable.tab_selected_background)
-            binding.personalInfoTab.setTextColor(getColor(R.color.white))
-            binding.teamsTab.setBackgroundResource(android.R.color.transparent)
-            binding.teamsTab.setTextColor(getColor(R.color.black))
+            binding.personalInfoTab.setTextColor(getColor(R.color.black))
+            binding.personalInfoTab.setTypeface(null, android.graphics.Typeface.BOLD)
+            binding.teamsTab.setTextColor(android.graphics.Color.parseColor("#999999"))
+            binding.teamsTab.setTypeface(null, android.graphics.Typeface.NORMAL)
+
+            binding.personalInfoSection.visibility = View.VISIBLE
+            binding.systemSection.visibility = View.GONE
         }
 
         binding.teamsTab.setOnClickListener {
-            binding.teamsTab.setBackgroundResource(R.drawable.tab_selected_background)
-            binding.teamsTab.setTextColor(getColor(R.color.white))
-            binding.personalInfoTab.setBackgroundResource(android.R.color.transparent)
-            binding.personalInfoTab.setTextColor(getColor(R.color.black))
-            Snackbar.make(binding.root, "System settings coming soon", Snackbar.LENGTH_SHORT).show()
+            binding.teamsTab.setTextColor(getColor(R.color.black))
+            binding.teamsTab.setTypeface(null, android.graphics.Typeface.BOLD)
+            binding.personalInfoTab.setTextColor(android.graphics.Color.parseColor("#999999"))
+            binding.personalInfoTab.setTypeface(null, android.graphics.Typeface.NORMAL)
+
+            binding.personalInfoSection.visibility = View.GONE
+            binding.systemSection.visibility = View.VISIBLE
         }
     }
 
@@ -90,15 +81,14 @@ class ProfileActivity : BaseActivity() {
         binding.editButton.setOnClickListener {
             val intent = Intent(this, EditProfileActivity::class.java)
 
-            // Pass current data to edit screen
             intent.putExtra("firstName", binding.firstNameValue.text.toString())
             intent.putExtra("lastName", binding.lastNameValue.text.toString())
             intent.putExtra("dateOfBirth", binding.dateOfBirthValue.text.toString())
             intent.putExtra("email", binding.emailValue.text.toString())
             intent.putExtra("phoneNumber", binding.phoneNumberValue.text.toString())
             intent.putExtra("location", binding.locationValue.text.toString())
-            intent.putExtra("numberOfValves", binding.numberOfValvesValue.text.toString().toIntOrNull() ?: 8)
-            intent.putExtra("avatarUrl", currentAvatarUrl)  // Pass avatar URL
+            intent.putExtra("numberOfValves", binding.numberOfValvesValue.text.toString().replace(" valves to manage", "").toIntOrNull() ?: 8)
+            intent.putExtra("avatarUrl", currentAvatarUrl)
 
             editProfileLauncher.launch(intent)
         }
@@ -116,14 +106,11 @@ class ProfileActivity : BaseActivity() {
     }
 
     private fun performLogout() {
-        // Clear auth tokens
         com.example.myapplicationv10.utils.TokenManager.getInstance(this).logout()
 
-        // Clear other preferences
         val prefs = getSharedPreferences("app_preferences", MODE_PRIVATE)
         prefs.edit().clear().apply()
 
-        // Navigate to login
         val intent = Intent(this, LoginActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
@@ -133,7 +120,7 @@ class ProfileActivity : BaseActivity() {
     private fun loadValveLimit() {
         val valveLimitManager = ValveLimitManager.getInstance(this)
         val limit = valveLimitManager.getValveLimit()
-        binding.numberOfValvesValue.text = limit.toString()
+        binding.numberOfValvesValue.text = "$limit valves to manage"
     }
 
     private fun observeProfileState() {
@@ -153,10 +140,8 @@ class ProfileActivity : BaseActivity() {
 
                         val user = result.data
 
-                        // Store avatar URL for edit screen (fix localhost URLs)
                         currentAvatarUrl = Constants.fixAvatarUrl(user.avatarUrl)
 
-                        // Update text fields
                         binding.firstNameValue.text = user.firstName ?: "N/A"
                         binding.lastNameValue.text = user.lastName ?: "N/A"
                         binding.emailValue.text = user.email
@@ -164,18 +149,15 @@ class ProfileActivity : BaseActivity() {
                         binding.locationValue.text = user.location ?: "N/A"
                         binding.dateOfBirthValue.text = formatDateForDisplay(user.dateOfBirth)
 
-                        // Update header with full name
                         val fullName = "${user.firstName ?: ""} ${user.lastName ?: ""}".trim()
                         binding.userFullName.text = fullName.ifEmpty { "User" }
                         binding.userEmailHeader.text = user.email
 
-                        // Load avatar with Coil (already fixed above)
                         loadAvatar(currentAvatarUrl)
 
-                        // Update valve limit from preferences if stored
                         val valveLimitManager = ValveLimitManager.getInstance(this@ProfileActivity)
                         val currentLimit = valveLimitManager.getValveLimit()
-                        binding.numberOfValvesValue.text = currentLimit.toString()
+                        binding.numberOfValvesValue.text = "$currentLimit valves to manage"
                     }
 
                     is NetworkResult.Error -> {
@@ -193,19 +175,14 @@ class ProfileActivity : BaseActivity() {
         }
     }
 
-    /**
-     * Load avatar image using Coil with caching and error handling
-     */
     private fun loadAvatar(url: String?) {
         binding.profilePicture.load(url) {
             crossfade(true)
             placeholder(R.drawable.ic_avatar_placeholder)
             error(R.drawable.ic_avatar_placeholder)
             transformations(CircleCropTransformation())
-            // Enable memory and disk caching
             memoryCacheKey(url)
             diskCacheKey(url)
-            // Listener for debugging (optional, remove in production)
             listener(
                 onError = { _, result ->
                     android.util.Log.e("ProfileActivity", "Avatar load failed: ${result.throwable.message}")
@@ -217,9 +194,6 @@ class ProfileActivity : BaseActivity() {
         }
     }
 
-    /**
-     * Format date from API format (yyyy-MM-dd) to display format (dd/MM/yyyy)
-     */
     private fun formatDateForDisplay(date: String?): String {
         if (date.isNullOrEmpty()) return "N/A"
 
